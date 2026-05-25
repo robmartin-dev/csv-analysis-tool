@@ -2,46 +2,41 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_COLS 20
+#define MAX_FIELD_SIZE 256
+
 void parse_csv(FILE *file) {
-	int ch;
-	char field_buffer[256];
-	int buf_idx = 0;
+	char row_data[MAX_COLS][MAX_FIELD_SIZE];
+	int col_idx = 0;
+	int ch_idx = 0;
 	enum State state = STATE_UNQUOTED;
-	int new_row = 0;
-	int new_field = 0;
-	putc('{', stdout);
+	int ch;
 	while ((ch = fgetc(file)) != EOF) {
 		if (state == STATE_UNQUOTED) {
 			if (ch == '"') {
 				state = STATE_QUOTED;
 			} else if (ch == ',') {
-				field_buffer[buf_idx] = '\0';
-				new_field = 1;
+				row_data[col_idx][ch_idx] = '\0';
+				col_idx++;
+				ch_idx = 0;
 			} else if (ch == '\n') {
-				field_buffer[buf_idx] = '\0';
-				putc('}', stdout);
-				new_row = 1;
-				new_field = 1;
+				row_data[col_idx][ch_idx] = '\0';
+				printf("Row, field 0: %s\n", row_data[0]);
+				col_idx = 0;
+				ch_idx = 0;
 			} else {
-				field_buffer[buf_idx++] = ch;
+				if (ch_idx < MAX_FIELD_SIZE - 1) {
+					row_data[col_idx][ch_idx++] = ch;
+				}
 			}
 		} else {
 			if (ch == '"') {
 				state = STATE_UNQUOTED;
 			} else {
-				field_buffer[buf_idx++] = ch;
+				if (ch_idx < MAX_FIELD_SIZE - 1) {
+					row_data[col_idx][ch_idx++] = ch;
+				}
 			}
-		}
-
-		if (new_row) {
-			putc('\n', stdout);
-			putc('{', stdout);
-			new_row = 0;
-		}
-		if (new_field) {
-			printf("[%s] ", field_buffer);
-			buf_idx = 0;
-			new_field = 0;
 		}
 	}
 }
