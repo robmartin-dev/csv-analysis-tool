@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
+enum State {
+	STATE_UNQUOTED,
+	STATE_QUOTED
+};
+
 int main(int argc, char **argv) {
 	if (argc == 1) {
 		printf("No arguments provided\n");
@@ -20,8 +25,40 @@ int main(int argc, char **argv) {
 		}	
 
 		int ch;
+		enum State state = STATE_UNQUOTED;
+		int new_row = 1;
+		int new_field = 1;
 		while ((ch = fgetc(file)) != EOF) {
-			putc(ch, stdout);
+			if (new_row) {
+				putc('\n', stdout);
+				putc('{', stdout);
+				new_row = 0;
+			}
+			if (new_field) {
+				putc('[', stdout);
+				new_field = 0;
+			}
+			if (state == STATE_UNQUOTED) {
+				if (ch == '"') {
+					state = STATE_QUOTED;
+				} else if (ch == ',') {
+					putc(']', stdout);
+					new_field = 1;
+				} else if (ch == '\n') {
+					putc(']', stdout);
+					putc('}', stdout);
+					new_row = 1;
+					new_field = 1;
+				} else {
+					putc(ch, stdout);
+				}
+			} else {
+				if (ch == '"') {
+					state = STATE_UNQUOTED;
+				} else {
+					putc(ch, stdout);
+				}
+			}
 		}
 	}
 	
