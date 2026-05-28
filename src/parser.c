@@ -30,7 +30,7 @@ void parse_csv(FILE *file) {
 				col_idx = 0;
 				ch_idx = 0;
 			} else {
-				if (ch_idx < MAX_FIELD_SIZE - 1) {
+				if (ch != '\r' && ch_idx < MAX_FIELD_SIZE - 1) {
 					row_data[col_idx][ch_idx++] = ch;
 				}
 			}
