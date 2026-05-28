@@ -1,6 +1,7 @@
 #include "parser.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_COLS 20
 #define MAX_FIELD_SIZE 256
@@ -16,6 +17,10 @@ void parse_csv(FILE *file) {
 			if (ch == '"') {
 				state = STATE_QUOTED;
 			} else if (ch == ',') {
+				if (col_idx == MAX_COLS) {
+					printf("CSV must have a maximum of %d columns", MAX_COLS);
+					exit(1);
+				}
 				row_data[col_idx][ch_idx] = '\0';
 				col_idx++;
 				ch_idx = 0;
@@ -38,5 +43,10 @@ void parse_csv(FILE *file) {
 				}
 			}
 		}
+	}
+
+	if (ch_idx > 0 || col_idx > 0) {
+		row_data[col_idx][ch_idx] = '\0';
+		printf("Row, field 0: %s\n", row_data[0]);
 	}
 }
